@@ -1,4 +1,3 @@
-require("dotenv").config();
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -42,9 +41,9 @@ UserSchema.methods.createJWT = function () {
   );
 };
 
-// UserSchema.methods.comparePassword = async function (canditatePassword) {
-//   const isMatch = await bcrypt.compare(canditatePassword, this.password);
-//   return isMatch;
-// };
+UserSchema.methods.comparePassword = async function (canditatePassword) {
+  const isMatch = await bcrypt.compare(canditatePassword, this.password);
+  return isMatch;
+};
 
 module.exports = mongoose.model("User", UserSchema);
