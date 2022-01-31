@@ -15,13 +15,15 @@ const login = async (req, res) => {
     throw new BadRequestError("Please provide email and password");
   }
   const user = await User.findOne({ email });
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (user && isMatch) {
-    const token = user.createJWT();
-    res.status(StatusCodes.OK).json({ user, token });
-  } else {
+  if (!user) {
     throw new UnauthenticatedError("Invalid Credentials");
   }
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  if (!isPasswordCorrect) {
+    throw new UnauthenticatedError("Invalid Credentials");
+  }
+  const token = user.createJWT();
+  res.status(StatusCodes.OK).json({ user: { name: user.name }, token });
 };
 
 module.exports = {
