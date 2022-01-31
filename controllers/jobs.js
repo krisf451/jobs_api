@@ -1,17 +1,47 @@
+const Job = require("../models/Job");
+const { StatusCodes } = require("http-status-codes");
+const { BadRequestError, NotFoundError } = require("../errors");
+
 const getAllJobs = async (req, res) => {
-  res.send("get all jobs");
+  const jobs = await Job.find({ createdBy: req.user.userId }).sort("createdAt");
+  res.status(StatusCodes.OK).json({ jobs, count: jobs.length });
 };
 const getJob = async (req, res) => {
-  res.send("get job");
+  const job = await Job.findOne({
+    createdBy: req.user.userId,
+    _id: req.params.id,
+  });
+  res.status(StatusCodes.OK).json({ job });
 };
 const createJob = async (req, res) => {
-  res.send(req.user);
+  req.body.createdBy = req.user.userId;
+  const job = await Job.create(req.body);
+  res.status(StatusCodes.CREATED).json({ job });
 };
 const updateJob = async (req, res) => {
-  res.send("update job");
+  const job = await Job.findOneAndUpdate(
+    { createdBy: req.user.userId, _id: req.params.id },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+      useFindAndModify: false,
+    }
+  );
+  if (!job) {
+    throw new BadRequestError("Invalid Job ID");
+  }
+  res.status(StatusCodes.OK).json({ job });
 };
 const deleteJob = async (req, res) => {
-  res.send("delete job");
+  const job = await Job.findOneAndDelete(
+    { createdBy: req.user.userId, _id: req.params.id },
+    { useFindAndModify: false }
+  );
+  if (!job) {
+    throw new BadRequestError("Invalid Job ID");
+  }
+  res.status(StatusCodes.OK).json({ status: "Successful Deletion", job: null });
 };
 
 module.exports = {
